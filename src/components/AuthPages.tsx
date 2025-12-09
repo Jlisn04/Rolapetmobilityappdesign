@@ -5,10 +5,12 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Checkbox } from './ui/checkbox';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Key } from 'lucide-react';
+import { authService } from '../services/AuthService';
+import { toast } from 'sonner@2.0.3';
 
 interface AuthPagesProps {
-  view: 'login' | 'register';
+  view: 'login' | 'register' | 'forgot-password';
   onViewChange: (view: string) => void;
   onLogin: (userData: any) => void;
 }
@@ -16,6 +18,7 @@ interface AuthPagesProps {
 export function AuthPages({ view, onViewChange, onLogin }: AuthPagesProps) {
   const [formData, setFormData] = useState({
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
     firstName: '',
@@ -23,10 +26,14 @@ export function AuthPages({ view, onViewChange, onLogin }: AuthPagesProps) {
     phone: '',
     vehicleType: '',
     acceptTerms: false,
-    membershipNumber: ''
+    membershipNumber: '',
+    isOfAge: false,
+    documentId: '',
+    legalConsent: ''
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showMinorFields, setShowMinorFields] = useState(false);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -59,6 +66,11 @@ export function AuthPages({ view, onViewChange, onLogin }: AuthPagesProps) {
       
       if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      }
+
+      if (!formData.isOfAge) {
+        if (!formData.documentId) newErrors.documentId = 'El número de documento es requerido';
+        if (!formData.legalConsent) newErrors.legalConsent = 'Debes aceptar la autorización legal';
       }
     }
 
@@ -156,6 +168,71 @@ export function AuthPages({ view, onViewChange, onLogin }: AuthPagesProps) {
                       className="text-green-600 hover:underline"
                     >
                       Regístrate aquí
+                    </button>
+                  </p>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === 'forgot-password') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Button
+            variant="ghost"
+            onClick={() => onViewChange('landing')}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver al inicio
+          </Button>
+          
+          <Card>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white font-bold text-xl">RP</span>
+              </div>
+              <CardTitle className="text-2xl">Recuperar Contraseña</CardTitle>
+              <p className="text-gray-600">Ingresa tu email para recuperar tu contraseña</p>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="tu@email.com"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+                
+                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
+                  Recuperar Contraseña
+                </Button>
+                
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">
+                    ¿Ya tienes cuenta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => onViewChange('login')}
+                      className="text-green-600 hover:underline"
+                    >
+                      Inicia sesión aquí
                     </button>
                   </p>
                 </div>
@@ -346,6 +423,56 @@ export function AuthPages({ view, onViewChange, onLogin }: AuthPagesProps) {
                   <AlertCircle className="w-4 h-4 mr-1" />
                   {errors.acceptTerms}
                 </p>
+              )}
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isOfAge"
+                  checked={formData.isOfAge}
+                  onCheckedChange={(checked) => {
+                    handleInputChange('isOfAge', checked as boolean);
+                    setShowMinorFields(!checked);
+                  }}
+                />
+                <Label htmlFor="isOfAge" className="text-sm">
+                  Soy mayor de edad
+                </Label>
+              </div>
+              
+              {!formData.isOfAge && (
+                <div className="space-y-2">
+                  <Label htmlFor="documentId">Número de Documento</Label>
+                  <Input
+                    id="documentId"
+                    value={formData.documentId}
+                    onChange={(e) => handleInputChange('documentId', e.target.value)}
+                    placeholder="123456789"
+                  />
+                  {errors.documentId && (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      {errors.documentId}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {!formData.isOfAge && (
+                <div className="space-y-2">
+                  <Label htmlFor="legalConsent">Autorización Legal</Label>
+                  <Input
+                    id="legalConsent"
+                    value={formData.legalConsent}
+                    onChange={(e) => handleInputChange('legalConsent', e.target.value)}
+                    placeholder="Nombre del responsable"
+                  />
+                  {errors.legalConsent && (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <AlertCircle className="w-4 h-4 mr-1" />
+                      {errors.legalConsent}
+                    </p>
+                  )}
+                </div>
               )}
               
               <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">

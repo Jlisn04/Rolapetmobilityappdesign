@@ -9,6 +9,8 @@ import { SocialView } from './components/SocialView';
 import { UserProfile } from './components/UserProfile';
 import { ReviewsView } from './components/ReviewsView';
 import { AdminPanel } from './components/AdminPanel';
+import { FeaturesDemo } from './components/FeaturesDemo';
+import { Toaster } from './components/ui/sonner';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
@@ -54,6 +56,15 @@ export default function App() {
         return (
           <AuthPages 
             view="register" 
+            onViewChange={handleViewChange} 
+            onLogin={handleLogin}
+          />
+        );
+      
+      case 'forgot-password':
+        return (
+          <AuthPages 
+            view="forgot-password" 
             onViewChange={handleViewChange} 
             onLogin={handleLogin}
           />
@@ -110,6 +121,9 @@ export default function App() {
           </div>
         );
       
+      case 'features-demo':
+        return <FeaturesDemo onViewChange={handleViewChange} />;
+      
       default:
         return <LandingPage onViewChange={handleViewChange} />;
     }
@@ -132,6 +146,7 @@ export default function App() {
       <main className={isAuthenticated || ['login', 'register'].includes(currentView) ? '' : ''}>
         {renderCurrentView()}
       </main>
+      <Toaster />
     </div>
   );
 }

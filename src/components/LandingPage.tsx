@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { MapPin, ShoppingBag, Users, Star, ArrowRight, Zap, Shield, Heart } from 'lucide-react';
+import { MapPin, ShoppingBag, Users, Star, ArrowRight, Zap, Shield, Heart, FlaskConical } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface LandingPageProps {
@@ -47,6 +47,11 @@ export function LandingPage({ onViewChange }: LandingPageProps) {
       icon: Heart,
       title: 'Comunidad Unida',
       description: 'Parte de la asociación Rola PET en Bogotá'
+    },
+    {
+      icon: FlaskConical,
+      title: 'Innovación Continua',
+      description: 'Desarrollo constante de nuevas tecnologías y soluciones'
     }
   ];
 
